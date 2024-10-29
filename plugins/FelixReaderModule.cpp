@@ -89,13 +89,13 @@ FelixReaderModule::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
     for (const auto & det_sender_res : det_senders) {
        const appmodel::FelixDataSender* data_sender = det_sender_res->cast<appmodel::FelixDataSender>();
        if (data_sender != nullptr) {
-	   m_links_enabled.push_back(data_sender->get_link());	 
-  	   for (const auto & stream_res : data_sender->get_contains()) {
+           m_links_enabled.push_back(data_sender->get_link());	 
+             for (const auto & stream_res : data_sender->get_contains()) {
              const confmodel::DetectorStream* stream = stream_res->cast<confmodel::DetectorStream>();
              if (stream != nullptr) {
               src_id_to_elink_map[stream->get_source_id()] = data_sender->get_link();
-	     } 
-	   }
+             } 
+           }
          }
       }
   }  
