@@ -70,15 +70,18 @@ FelixCardControllerModule::init(const std::shared_ptr<appfwk::ModuleConfiguratio
 
     // Extract felix infos
     auto flx_if = det_conn->get_receiver()->cast<appmodel::FelixInterface>();
+
     auto det_senders = det_conn->get_senders();
+
     std::vector<const appmodel::FelixDataSender*> flx_senders;
-    std::transform(det_senders.begin(), det_senders.end(), flx_senders.begin(),
-      [](const confmodel::DetDataSender* ptr) -> const appmodel::FelixDataSender* {
-          return dynamic_cast<const appmodel::FelixDataSender*>(ptr);
-      });
+    for( auto ds : det_senders) {
+      flx_senders.push_back(ds->cast<appmodel::FelixDataSender>());
+    }
 
     uint32_t id = flx_if->get_card()+flx_if->get_slr();
+
     m_card_wrappers.emplace(std::make_pair(id,std::make_unique<CardControllerWrapper>(id, flx_if, flx_senders)));
+
     if(m_card_wrappers.size() == 1) {
       // Do the init only for the first device (whole card)
       m_card_wrappers.begin()->second->init();

@@ -16,6 +16,8 @@
 
 #include "flxcard/FlxException.h"
 
+#include "fmt/core.h"
+
 // From STD
 #include <iomanip>
 #include <memory>
@@ -39,6 +41,7 @@ m_device_id(device_id),
 m_flx_cfg(flx_cfg),
 m_flx_senders(flx_senders)
 {
+
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS)
     << "CardControllerWrapper constructor called. Open card " << m_device_id;
 	
@@ -84,14 +87,12 @@ CardControllerWrapper::init() {
 void
 CardControllerWrapper::configure()
 {
-
- // Disable all links
- for(size_t i=0 ; i<12; ++i) {
-  std::stringstream ss;
-  ss << "DECODING_LINK" << std::setw(2) << std::setfill('0') << i << "_EGROUP0_CTRL_EPATH_ENA";
-  set_bitfield(ss.str(), 0);
- }
-
+  // Disable all links
+  for(size_t i=0 ; i<12; ++i) {
+    // std::stringstream ss;
+    // ss << "DECODING_LINK" << std::setw(2) << std::setfill('0') << i << "_EGROUP0_CTRL_EPATH_ENA";
+    set_bitfield(fmt::format("DECODING_LINK{:02}_EGROUP0_CTRL_EPATH_ENA", i), 0);
+  }
 
   // Enable/disable emulation
   if(m_flx_cfg->get_emu_fanout()) {
@@ -118,14 +119,9 @@ CardControllerWrapper::configure()
   }
   // Enable and configure the right links
  
-
   for(auto s : m_flx_senders) {
-    std::stringstream sc_stream;
-    sc_stream << "SUPER_CHUNK_FACTOR_LINK_"<< std::setw(2) << std::setfill('0') << s->get_link();
-    std::stringstream ena_stream;
-    ena_stream<< "DECODING_LINK" << std::setw(2) << std::setfill('0') << s->get_link() << "_EGROUP0_CTRL_EPATH_ENA";
-    set_bitfield(sc_stream.str(), m_flx_cfg->get_super_chunk_size());
-    set_bitfield(ena_stream.str(), 1);
+    set_bitfield(fmt::format("SUPER_CHUNK_FACTOR_LINK_{:02}",s->get_link()), m_flx_cfg->get_super_chunk_size());
+    set_bitfield(fmt::format("DECODING_LINK{:02}_EGROUP0_CTRL_EPATH_ENA",s->get_link()), 1);
   }
 }
 
