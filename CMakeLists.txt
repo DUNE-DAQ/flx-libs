@@ -51,9 +51,11 @@ endif()
 
 daq_protobuf_codegen( opmon/*.proto )
 
+daq_codegen(felixcardcontroller.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
 
-#daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp CardControllerWrapper.cpp LINK_LIBRARIES ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
-daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp LINK_LIBRARIES ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
+
+daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp CardControllerWrapper.cpp LINK_LIBRARIES ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
+# daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp LINK_LIBRARIES ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
 
 
 if(WITH_FELIX_AS_PACKAGE)
@@ -66,7 +68,7 @@ endif()
 ##############################################################################
 # Plugins
 daq_add_plugin(FelixReaderModule duneDAQModule LINK_LIBRARIES flxlibs)
-#daq_add_plugin(FelixCardController duneDAQModule LINK_LIBRARIES flxlibs)
+daq_add_plugin(FelixCardControllerModule duneDAQModule LINK_LIBRARIES flxlibs)
 
 ##############################################################################
 # Integration tests

@@ -75,14 +75,14 @@ FelixReaderModule::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
   auto modconf = mcfg->module<appmodel::DataReaderModule>(get_name());
 
   if (modconf->get_connections().size() != 1) {
-    throw InitializationError(ERS_HERE, "FLX Data Reader does not have a unique associated interface");
+    throw InitializationError(ERS_HERE, "FLX Data Reader does not have a unique associated flx_if");
   }
 
   const confmodel::DetectorToDaqConnection*  det_conn = modconf->get_connections()[0]->cast<confmodel::DetectorToDaqConnection>();
 
 // Create a source_id to local elink map
   std::map<uint, uint> src_id_to_elink_map;
-  auto interface = det_conn->get_receiver()->cast<appmodel::FelixInterface>();
+  auto flx_if = det_conn->get_receiver()->cast<appmodel::FelixInterface>();
   auto det_senders = det_conn->get_senders();
 
   if (!det_senders.empty()){
@@ -100,12 +100,12 @@ FelixReaderModule::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
       }
   }  
   m_num_links = m_links_enabled.size();
-  if (interface != nullptr) {
-        m_card_wrapper = std::make_unique<CardWrapper>(interface, m_links_enabled);
-        m_card_id = interface->get_card();
-        m_logical_unit = interface->get_slr();
-        m_block_size = interface->get_dma_block_size() * m_1kb_block_size;
-        m_chunk_trailer_size = interface->get_chunk_trailer_size();
+  if (flx_if != nullptr) {
+        m_card_wrapper = std::make_unique<CardWrapper>(flx_if, m_links_enabled);
+        m_card_id = flx_if->get_card();
+        m_logical_unit = flx_if->get_slr();
+        m_block_size = flx_if->get_dma_block_size() * m_1kb_block_size;
+        m_chunk_trailer_size = flx_if->get_chunk_trailer_size();
   }
   
 

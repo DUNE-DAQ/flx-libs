@@ -8,9 +8,6 @@
 #ifndef FLXLIBS_SRC_CARDCONTROLLERWRAPPER_HPP_
 #define FLXLIBS_SRC_CARDCONTROLLERWRAPPER_HPP_
 
-#include "flxlibs/felixcardcontroller/Nljs.hpp"
-#include "flxlibs/felixcardcontroller/Structs.hpp"
-
 #include "flxcard/FlxCard.h"
 
 #include <nlohmann/json.hpp>
@@ -19,7 +16,12 @@
 #include <mutex>
 #include <string>
 
-namespace dunedaq::flxlibs {
+namespace dunedaq {
+namespace appmodel {
+  class FelixInterface;
+  class FelixDataSender;
+}
+namespace flxlibs {
 
 class CardControllerWrapper
 {
@@ -27,7 +29,7 @@ public:
   /**
    * @brief CardControllerWrapper Constructor
    */
-  CardControllerWrapper(uint32_t device_id);
+  CardControllerWrapper(uint32_t device_id, const appmodel::FelixInterface * flx_cfg, const std::vector<const appmodel::FelixDataSender*>& flx_senders);
   ~CardControllerWrapper();
   CardControllerWrapper(const CardControllerWrapper&) = delete;            ///< Not copy-constructible
   CardControllerWrapper& operator=(const CardControllerWrapper&) = delete; ///< Not copy-assignable
@@ -36,14 +38,14 @@ public:
 
   using data_t = nlohmann::json;
   void init();
-  void configure(const felixcardcontroller::LogicalUnit & lu_cfg);
+  void configure();
 
   uint64_t get_register(std::string key);             // NOLINT(build/unsigned)
   void set_register(std::string key, uint64_t value); // NOLINT(build/unsigned)
   uint64_t get_bitfield(std::string key);             // NOLINT(build/unsigned)
   void set_bitfield(std::string key, uint64_t value); // NOLINT(build/unsigned)
   void gth_reset();
-  void check_alignment(const felixcardcontroller::LogicalUnit & lu_cfg, const uint64_t & aligned);
+  void check_alignment(uint64_t aligned);
 
 private:
 
@@ -53,11 +55,18 @@ private:
 
   // Card object
   uint32_t m_device_id;
+
+
   using UniqueFlxCard = std::unique_ptr<FlxCard>;
+
+  const appmodel::FelixInterface* m_flx_cfg;
+  const std::vector<const appmodel::FelixDataSender*> m_flx_senders;
+
   UniqueFlxCard m_flx_card;
   std::mutex m_card_mutex;
 };
 
-} // namespace dunedaq::flxlibs
+} // namespace flxlibs
+} // namespace dunedaq
 
 #endif // FLXLIBS_SRC_CARDCONTROLLERWRAPPER_HPP_
