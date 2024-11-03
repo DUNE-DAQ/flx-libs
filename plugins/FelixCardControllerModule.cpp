@@ -46,7 +46,7 @@ namespace dunedaq {
 namespace flxlibs {
 
 FelixCardControllerModule::FelixCardControllerModule(const std::string& name)
-  : DAQModule(name)
+  : DAQModule(name), m_cfg(nullptr)
 {
   //m_card_wrapper = std::make_unique<CardControllerWrapper>();
 
@@ -62,9 +62,9 @@ FelixCardControllerModule::FelixCardControllerModule(const std::string& name)
 void
 FelixCardControllerModule::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg) {
   
-  auto modconf = mcfg->module<appmodel::FelixCardControllerModule>(get_name());
+  m_cfg = mcfg->module<appmodel::FelixCardControllerModule>(get_name());
 
-  auto det_connections = modconf->get_controls();
+  auto det_connections = m_cfg->get_controls();
 
   for( auto det_conn : det_connections )  {
 
@@ -92,9 +92,10 @@ FelixCardControllerModule::init(const std::shared_ptr<appfwk::ModuleConfiguratio
 void
 FelixCardControllerModule::do_configure(const data_t& args)
 {
+
   for( auto const & [id, cw ] : m_card_wrappers ) {
     uint64_t aligned = cw->get_register(REG_GBT_ALIGNMENT_DONE);
-    cw->configure();
+    cw->configure(m_cfg->get_super_chunk_size(), m_cfg->get_emu_fanout());
     cw->check_alignment(aligned);
   }
 }

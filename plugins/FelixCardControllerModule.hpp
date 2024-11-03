@@ -20,6 +20,12 @@
 #include <string>
 
 namespace dunedaq {
+namespace appmodel {
+
+class FelixCardControllerModule;
+
+} // namespace appmodel
+
 namespace flxlibs {
 
 class FelixCardControllerModule : public dunedaq::appfwk::DAQModule
@@ -46,6 +52,7 @@ private:
   void gth_reset(const data_t& args);
 
   // Configuration
+  const appmodel::FelixCardControllerModule* m_cfg;
   // FELIX Card
   std::map<uint32_t, std::unique_ptr<CardControllerWrapper> > m_card_wrappers;
 };

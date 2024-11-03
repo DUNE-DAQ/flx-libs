@@ -38,7 +38,7 @@ public:
 
   using data_t = nlohmann::json;
   void init();
-  void configure();
+  void configure(uint16_t super_chunk_size, bool emu_fanout);
 
   uint64_t get_register(std::string key);             // NOLINT(build/unsigned)
   void set_register(std::string key, uint64_t value); // NOLINT(build/unsigned)

@@ -85,7 +85,7 @@ CardControllerWrapper::init() {
 }
 
 void
-CardControllerWrapper::configure()
+CardControllerWrapper::configure(uint16_t super_chunk_size, bool emu_fanout)
 {
   // Disable all links
   for(size_t i=0 ; i<12; ++i) {
@@ -95,7 +95,7 @@ CardControllerWrapper::configure()
   }
 
   // Enable/disable emulation
-  if(m_flx_cfg->get_emu_fanout()) {
+  if(emu_fanout) {
     //set_bitfield("FE_EMU_LOGIC_IDLES", 0); // FIXME
     //set_bitfield("FE_EMU_LOGIC_CHUNK_LENGTH", 0);
     //set_bitfield("FE_EMU_LOGIC_ENA", 0);
@@ -120,7 +120,7 @@ CardControllerWrapper::configure()
   // Enable and configure the right links
  
   for(auto s : m_flx_senders) {
-    set_bitfield(fmt::format("SUPER_CHUNK_FACTOR_LINK_{:02}",s->get_link()), m_flx_cfg->get_super_chunk_size());
+    set_bitfield(fmt::format("SUPER_CHUNK_FACTOR_LINK_{:02}",s->get_link()), super_chunk_size);
     set_bitfield(fmt::format("DECODING_LINK{:02}_EGROUP0_CTRL_EPATH_ENA",s->get_link()), 1);
   }
 }
@@ -199,7 +199,8 @@ void
 CardControllerWrapper::check_alignment( uint64_t aligned )
 {
   TLOG_DEBUG(TLVL_WORK_STEPS) << "Checking link alignment for " << m_flx_cfg->get_slr();
-  // std::vector<uint32_t> alignment_mask = lu_cfg.ignore_alignment_mask;
+
+  bool emu_fanout = get_bitfield("FE_EMU_ENA_EMU_TOHOST");
   // check the alingment on a logical unit
   for(auto s : m_flx_senders) {
     // here we want to print out a log message when the links do not appear to be aligned.
@@ -211,7 +212,7 @@ CardControllerWrapper::check_alignment( uint64_t aligned )
     //     ers::error(flxlibs::ChannelAlignment(ERS_HERE, li.link_id));
     //   }
     // }
-    if(!m_flx_cfg->get_emu_fanout() && !is_aligned) {
+    if(!emu_fanout && !is_aligned) {
       ers::error(flxlibs::ChannelAlignment(ERS_HERE, s->get_link()));
     }
   }
