@@ -44,7 +44,6 @@ private:
 
   // Commands
   void do_configure(const data_t& args);
-  // void get_info(opmonlib::InfoCollector& ci, int level);
   void get_reg(const data_t& args);
   void set_reg(const data_t& args);
   void get_bf(const data_t& args);
@@ -54,7 +53,7 @@ private:
   // Configuration
   const appmodel::FelixCardControllerModule* m_cfg;
   // FELIX Card
-  std::map<uint32_t, std::unique_ptr<CardControllerWrapper> > m_card_wrappers;
+  std::map<uint32_t, std::shared_ptr<CardControllerWrapper> > m_card_wrappers;
 };
 
 } // namespace flxlibs

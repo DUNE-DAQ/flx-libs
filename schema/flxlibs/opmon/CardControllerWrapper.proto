@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package dunedaq.flxlibs.opmon;
+
+message LinkInfo {
+
+  bool enabled = 1;
+  bool aligned = 2;
+  
+}

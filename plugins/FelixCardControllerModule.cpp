@@ -6,7 +6,6 @@
  * received with this code.
  */
 #include "flxlibs/felixcardcontroller/Nljs.hpp"
-// #include "flxlibs/felixcardcontrollerinfo/InfoNljs.hpp"
 
 #include "FelixCardControllerModule.hpp"
 #include "FelixIssues.hpp"
@@ -48,7 +47,6 @@ namespace flxlibs {
 FelixCardControllerModule::FelixCardControllerModule(const std::string& name)
   : DAQModule(name), m_cfg(nullptr)
 {
-  //m_card_wrapper = std::make_unique<CardControllerWrapper>();
 
   register_command("conf", &FelixCardControllerModule::do_configure);
   register_command("start", &FelixCardControllerModule::gth_reset);
@@ -80,7 +78,9 @@ FelixCardControllerModule::init(const std::shared_ptr<appfwk::ModuleConfiguratio
 
     uint32_t id = flx_if->get_card()+flx_if->get_slr();
 
-    m_card_wrappers.emplace(std::make_pair(id,std::make_unique<CardControllerWrapper>(id, flx_if, flx_senders)));
+    auto cw_p = std::make_shared<CardControllerWrapper>(id, flx_if, flx_senders);
+    m_card_wrappers[id] = cw_p;
+    register_node( fmt::format("controller-{}", id), cw_p);
 
     if(m_card_wrappers.size() == 1) {
       // Do the init only for the first device (whole card)
@@ -99,38 +99,6 @@ FelixCardControllerModule::do_configure(const data_t& args)
     cw->check_alignment(aligned);
   }
 }
-
-// void
-// FelixCardControllerModule::get_info(opmonlib::InfoCollector& ci, int /*level*/)
-// {
-//   // for (auto lu : m_cfg.logical_units) {
-//   //    uint32_t id = m_cfg.card_id+lu.log_unit_id;
-//   //    uint64_t aligned = m_card_wrappers.at(id)->get_register(REG_GBT_ALIGNMENT_DONE);
-
-//   //    m_card_wrappers.at(id)->check_alignment(lu, aligned); // check links are aligned
-
-//   //    for( auto li : lu.links) {
-//   //       std::stringstream info_name;
-//   //       info_name << "device_" << id << "_link_" << li.link_id;
-//   //       felixcardcontrollerinfo::LinkInfo info;
-//   //       info.device_id = id;
-//   //       info.link_id = li.link_id;
-//   //       info.enabled = li.enabled;
-//   //       info.aligned = aligned & (1<<li.link_id);
-//   //       opmonlib::InfoCollector tmp_ic;
-//   //       tmp_ic.add(info);
-//   //       ci.add(info_name.str(),tmp_ic);
-//   //    }
-//   // }
-
-
-//   for( auto const & [id, cw ] : m_card_wrappers ) {
-
-//     uint64_t aligned = cw->get_register(REG_GBT_ALIGNMENT_DONE);
-//     cw->check_alignment(aligned);
-
-//   }
-// }
 
 void
 FelixCardControllerModule::get_reg(const data_t& args)

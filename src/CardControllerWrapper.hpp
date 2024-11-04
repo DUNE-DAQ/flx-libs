@@ -8,6 +8,7 @@
 #ifndef FLXLIBS_SRC_CARDCONTROLLERWRAPPER_HPP_
 #define FLXLIBS_SRC_CARDCONTROLLERWRAPPER_HPP_
 
+#include "opmonlib/MonitorableObject.hpp"
 #include "flxcard/FlxCard.h"
 
 #include <nlohmann/json.hpp>
@@ -23,7 +24,7 @@ namespace appmodel {
 }
 namespace flxlibs {
 
-class CardControllerWrapper
+class CardControllerWrapper : public opmonlib::MonitorableObject
 {
 public:
   /**
@@ -47,6 +48,9 @@ public:
   void gth_reset();
   void check_alignment(uint64_t aligned);
 
+protected:
+  void generate_opmon_data() override;
+  
 private:
 
   // Card
