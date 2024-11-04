@@ -7,6 +7,7 @@
  */
 // From Module
 #include "CardControllerWrapper.hpp"
+#include "flxlibs/opmon/CardControllerWrapper.pb.h"
 #include "FelixDefinitions.hpp"
 #include "FelixIssues.hpp"
 
@@ -218,5 +219,25 @@ CardControllerWrapper::check_alignment( uint64_t aligned )
   }
 }
 
+void
+CardControllerWrapper::generate_opmon_data()
+{
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Monitoring link alignment for " << m_flx_cfg->get_slr();
+
+  uint64_t aligned = get_register(REG_GBT_ALIGNMENT_DONE);
+  
+  for(auto s : m_flx_senders) {
+
+    opmon::LinkInfo i;
+    i.set_enabled(true);
+    i.set_aligned( aligned & (1<<s->get_link()) );
+    publish( std::move(i),
+	     { {"device", fmt::format("{}", m_device_id) },
+	       {"link",   fmt::format("{}", s->get_link()) } });
+    
+  } // loop over links
+}
+
+  
 } // namespace flxlibs
 } // namespace dunedaq
