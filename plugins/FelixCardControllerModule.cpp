@@ -61,6 +61,7 @@ void
 FelixCardControllerModule::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg) {
   
   m_cfg = mcfg->module<appmodel::FelixCardControllerModule>(get_name());
+  auto session = mcfg->configuration_manager()->session();
 
   auto det_connections = m_cfg->get_controls();
 
@@ -73,6 +74,10 @@ FelixCardControllerModule::init(const std::shared_ptr<appfwk::ModuleConfiguratio
 
     std::vector<const appmodel::FelixDataSender*> flx_senders;
     for( auto ds : det_senders) {
+
+      if (ds->disabled(*session))
+        continue;
+
       flx_senders.push_back(ds->cast<appmodel::FelixDataSender>());
     }
 
