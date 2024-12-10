@@ -33,7 +33,7 @@ public:
    * @brief CardWrapper Constructor
    * @param name Instance name for this CardWrapper instance
    */
-  CardWrapper(const appmodel::FelixInterface * cfg);
+  CardWrapper(const appmodel::FelixInterface * cfg, std::vector<unsigned int>);
   ~CardWrapper();
   CardWrapper(const CardWrapper&) = delete;            ///< CardWrapper is not copy-constructible
   CardWrapper& operator=(const CardWrapper&) = delete; ///< CardWrapper is not copy-assignable

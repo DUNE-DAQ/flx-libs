@@ -7,12 +7,17 @@
  */
 // From Module
 #include "CardControllerWrapper.hpp"
+#include "flxlibs/opmon/CardControllerWrapper.pb.h"
 #include "FelixDefinitions.hpp"
 #include "FelixIssues.hpp"
 
 #include "logging/Logging.hpp"
+#include "appmodel/FelixDataSender.hpp"
+#include "appmodel/FelixInterface.hpp"
 
 #include "flxcard/FlxException.h"
+
+#include "fmt/core.h"
 
 // From STD
 #include <iomanip>
@@ -32,8 +37,12 @@ enum
 namespace dunedaq {
 namespace flxlibs {
 
-CardControllerWrapper::CardControllerWrapper(uint32_t device_id) : m_device_id(device_id)
+CardControllerWrapper::CardControllerWrapper(uint32_t device_id, const appmodel::FelixInterface * flx_cfg, const std::vector<const appmodel::FelixDataSender*>& flx_senders) : 
+m_device_id(device_id),
+m_flx_cfg(flx_cfg),
+m_flx_senders(flx_senders)
 {
+
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS)
     << "CardControllerWrapper constructor called. Open card " << m_device_id;
 	
@@ -77,18 +86,17 @@ CardControllerWrapper::init() {
 }
 
 void
-CardControllerWrapper::configure(const felixcardcontroller::LogicalUnit & lu_cfg)
+CardControllerWrapper::configure(uint16_t super_chunk_size, bool emu_fanout)
 {
-
- // Disable all links
- for(size_t i=0 ; i<12; ++i) {
-  std::stringstream ss;
-  ss << "DECODING_LINK" << std::setw(2) << std::setfill('0') << i << "_EGROUP0_CTRL_EPATH_ENA";
-  set_bitfield(ss.str(), 0);
- }
+  // Disable all links
+  for(size_t i=0 ; i<12; ++i) {
+    // std::stringstream ss;
+    // ss << "DECODING_LINK" << std::setw(2) << std::setfill('0') << i << "_EGROUP0_CTRL_EPATH_ENA";
+    set_bitfield(fmt::format("DECODING_LINK{:02}_EGROUP0_CTRL_EPATH_ENA", i), 0);
+  }
 
   // Enable/disable emulation
-  if(lu_cfg.emu_fanout) {
+  if(emu_fanout) {
     //set_bitfield("FE_EMU_LOGIC_IDLES", 0); // FIXME
     //set_bitfield("FE_EMU_LOGIC_CHUNK_LENGTH", 0);
     //set_bitfield("FE_EMU_LOGIC_ENA", 0);
@@ -112,15 +120,9 @@ CardControllerWrapper::configure(const felixcardcontroller::LogicalUnit & lu_cfg
   }
   // Enable and configure the right links
  
-  for(auto li : lu_cfg.links) {
-    if(li.enabled) {
-      std::stringstream sc_stream;
-      sc_stream << "SUPER_CHUNK_FACTOR_LINK_"<< std::setw(2) << std::setfill('0') << li.link_id;
-      std::stringstream ena_stream;
-      ena_stream<< "DECODING_LINK" << std::setw(2) << std::setfill('0') << li.link_id << "_EGROUP0_CTRL_EPATH_ENA";
-      set_bitfield(sc_stream.str(), li.superchunk_factor);
-      set_bitfield(ena_stream.str(), 1);
-    }
+  for(auto s : m_flx_senders) {
+    set_bitfield(fmt::format("SUPER_CHUNK_FACTOR_LINK_{:02}",s->get_link()), super_chunk_size);
+    set_bitfield(fmt::format("DECODING_LINK{:02}_EGROUP0_CTRL_EPATH_ENA",s->get_link()), 1);
   }
 }
 
@@ -195,23 +197,47 @@ CardControllerWrapper::gth_reset()
 }
 
 void
-CardControllerWrapper::check_alignment(const felixcardcontroller::LogicalUnit & lu_cfg, const uint64_t & aligned)
+CardControllerWrapper::check_alignment( uint64_t aligned )
 {
-  TLOG_DEBUG(TLVL_WORK_STEPS) << "Checking link alignment for " << lu_cfg.log_unit_id;
-  std::vector<uint32_t> alignment_mask = lu_cfg.ignore_alignment_mask;
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Checking link alignment for " << m_flx_cfg->get_slr();
+
+  bool emu_fanout = get_bitfield("FE_EMU_ENA_EMU_TOHOST");
   // check the alingment on a logical unit
-  for(auto li : lu_cfg.links) {
+  for(auto s : m_flx_senders) {
     // here we want to print out a log message when the links do not appear to be aligned.
     // for WIB readout link_id 5 is always reserved for tp links, so alignemnt is not expected fort these
-    bool is_aligned = aligned & (1<<li.link_id);
-    auto found_link = std::find(std::begin(alignment_mask), std::end(alignment_mask), li.link_id);
-    if(found_link == std::end(alignment_mask)) {
-      if(!lu_cfg.emu_fanout && !is_aligned) {
-        ers::error(flxlibs::ChannelAlignment(ERS_HERE, li.link_id));
-      }
+    bool is_aligned = aligned & (1<<s->get_link());
+    // auto found_link = std::find(std::begin(alignment_mask), std::end(alignment_mask), li.link_id);
+    // if(found_link == std::end(alignment_mask)) {
+    //   if(!lu_cfg.emu_fanout && !is_aligned) {
+    //     ers::error(flxlibs::ChannelAlignment(ERS_HERE, li.link_id));
+    //   }
+    // }
+    if(!emu_fanout && !is_aligned) {
+      ers::error(flxlibs::ChannelAlignment(ERS_HERE, s->get_link()));
     }
   }
 }
 
+void
+CardControllerWrapper::generate_opmon_data()
+{
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Monitoring link alignment for " << m_flx_cfg->get_slr();
+
+  uint64_t aligned = get_register(REG_GBT_ALIGNMENT_DONE);
+  
+  for(auto s : m_flx_senders) {
+
+    opmon::LinkInfo i;
+    i.set_enabled(true);
+    i.set_aligned( aligned & (1<<s->get_link()) );
+    publish( std::move(i),
+	     { {"device", fmt::format("{}", m_device_id) },
+	       {"link",   fmt::format("{}", s->get_link()) } });
+    
+  } // loop over links
+}
+
+  
 } // namespace flxlibs
 } // namespace dunedaq

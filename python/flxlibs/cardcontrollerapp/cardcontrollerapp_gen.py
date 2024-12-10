@@ -51,7 +51,7 @@ def get_cardcontroller_app(
     modules = []
     lus = []
 
-    # Create FelixCardController plugin configs
+    # Create FelixCardControllerModule plugin configs
     for slr in slrs:
         elinks = []
         for l in slrs[slr]:
@@ -62,7 +62,7 @@ def get_cardcontroller_app(
 
     # Create modules
     modules += [DAQModule(name = nickname, 
-                          plugin = 'FelixCardController',
+                          plugin = 'FelixCardControllerModule',
                           conf = flx.Conf(card_id = card_id, logical_units = lus)
                              )]
 
