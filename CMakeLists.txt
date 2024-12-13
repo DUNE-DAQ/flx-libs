@@ -12,6 +12,10 @@ find_package(datahandlinglibs REQUIRED)
 find_package(fdreadoutlibs REQUIRED)
 find_package(felix REQUIRED)
 find_package(opmonlib REQUIRED)
+find_package(folly)
+
+# Needed so code links correctly against folly, built with the -mavx2 option
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2")
 
 
 ##############################################################################
