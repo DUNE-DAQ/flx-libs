@@ -12,6 +12,7 @@ find_package(datahandlinglibs REQUIRED)
 find_package(fdreadoutlibs REQUIRED)
 find_package(felix REQUIRED)
 find_package(opmonlib REQUIRED)
+find_package(folly)
 
 
 ##############################################################################
