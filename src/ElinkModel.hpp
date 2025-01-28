@@ -18,7 +18,7 @@
 #include "iomanager/IOManager.hpp"
 #include "iomanager/Sender.hpp"
 #include "logging/Logging.hpp"
-#include "utilities/ReusableThread.hpp"
+#include "datahandlinglibs/utils/ReusableThread.hpp"
 
 #include <folly/ProducerConsumerQueue.h>
 #include <nlohmann/json.hpp>
@@ -190,7 +190,7 @@ private:
 
   // Processor
   inline static const std::string m_parser_thread_name = "elinkp";
-  utilities::ReusableThread m_parser_thread;
+  datahandlinglibs::ReusableThread m_parser_thread;
   void process_elink()
   {
     while (m_run_marker.load()) {
