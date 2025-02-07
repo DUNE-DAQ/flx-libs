@@ -206,6 +206,7 @@ CardControllerWrapper::check_alignment( uint64_t aligned )
   for(auto s : m_flx_senders) {
     // here we want to print out a log message when the links do not appear to be aligned.
     // for WIB readout link_id 5 is always reserved for tp links, so alignemnt is not expected fort these
+#warning FIXME: Horrible remapping workaround. Temporary fix only! 
     auto id_to_check = m_flx_cfg->get_slr() * 6 + s->get_link();
     bool is_aligned = aligned & (1<<id_to_check);
     // auto found_link = std::find(std::begin(alignment_mask), std::end(alignment_mask), li.link_id);
@@ -231,6 +232,7 @@ CardControllerWrapper::generate_opmon_data()
 
     opmon::LinkInfo i;
     i.set_enabled(true);
+#warning FIXME: Horrible remapping workaround. Temporary fix only!
     auto id_to_check = m_flx_cfg->get_slr() * 6 + s->get_link();
     bool is_aligned = aligned & (1<<id_to_check);
     i.set_aligned( is_aligned );
