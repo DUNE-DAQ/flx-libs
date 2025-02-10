@@ -79,11 +79,11 @@ tokenize(std::string const& str, const char delim, std::vector<std::string>& out
 }
 
 void
-FelixReaderModule::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
+FelixReaderModule::init(const std::shared_ptr<appfwk::ConfigurationManager> mcfg)
 {
   //auto ini = args.get<appfwk::app::ModInit>();
   
-  auto modconf = mcfg->module<appmodel::DataReaderModule>(get_name());
+  auto modconf = mcfg->get_dal<appmodel::DataReaderModule>(get_name());
 
   if (modconf->get_connections().size() != 1) {
     throw InitializationError(ERS_HERE, "FLX Data Reader does not have a unique associated interface");
