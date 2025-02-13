@@ -70,15 +70,10 @@ FelixReaderModule::FelixReaderModule(const std::string& name)
 void
 FelixReaderModule::init(const std::shared_ptr<appfwk::ConfigurationManager> mcfg)
 {
-<<<<<<< HEAD
   //auto ini = args.get<appfwk::app::ModInit>();
   
   auto modconf = mcfg->get_dal<appmodel::DataReaderModule>(get_name());
-=======
- 
-  auto modconf = mcfg->module<appmodel::DataReaderModule>(get_name());
-  auto session = mcfg->configuration_manager()->session();
->>>>>>> origin/patch/fddaq-v5.2.x
+  auto session = mcfg->session();
 
   if (modconf->get_connections().size() != 1) {
     throw InitializationError(ERS_HERE, "FLX Data Reader does not have a unique associated flx_if");

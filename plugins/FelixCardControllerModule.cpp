@@ -58,10 +58,10 @@ FelixCardControllerModule::FelixCardControllerModule(const std::string& name)
 }
 
 void
-FelixCardControllerModule::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg) {
+FelixCardControllerModule::init(const std::shared_ptr<appfwk::ConfigurationManager> cfgMgr) {
   
-  m_cfg = mcfg->module<appmodel::FelixCardControllerModule>(get_name());
-  auto session = mcfg->configuration_manager()->session();
+  m_cfg = cfgMgr->get_dal<appmodel::FelixCardControllerModule>(get_name());
+  auto session = cfgMgr->session();
 
   auto det_connections = m_cfg->get_controls();
 

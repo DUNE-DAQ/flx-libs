@@ -38,7 +38,7 @@ public:
   FelixCardControllerModule(FelixCardControllerModule&&) = delete;            ///< FelixCardControllerModule is not move-constructible
   FelixCardControllerModule& operator=(FelixCardControllerModule&&) = delete; ///< FelixCardControllerModule is not move-assignable
 
-  void init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg) override;
+  void init(const std::shared_ptr<appfwk::ConfigurationManager> cfgMgr) override;
 
 private:
 
