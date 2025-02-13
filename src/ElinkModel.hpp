@@ -89,7 +89,7 @@ public:
     if (!m_run_marker.load()) {
       set_running(true);
       m_parser_thread.set_work(&ElinkModel::process_elink, this);
-      TLOG_DEBUG(5) << "Started ElinkModel of link " << inherited::m_link_id << "...";
+      TLOG() << "Started ElinkModel of link " << inherited::m_link_id << "...";
     } else {
       TLOG_DEBUG(5) << "ElinkModel of link " << inherited::m_link_id << " is already running!";
     }
