@@ -54,7 +54,7 @@ FelixReaderModule::FelixReaderModule(const std::string& name)
   , m_configured(false)
   , m_card_id(0)
   , m_logical_unit(0)
-  , m_links_enabled({0})
+  , m_links_enabled()
   , m_num_links(0)
   , m_block_size(0)
   , m_block_router(nullptr)
@@ -67,59 +67,77 @@ FelixReaderModule::FelixReaderModule(const std::string& name)
   register_command("stop_trigger_sources", &FelixReaderModule::do_stop);
 }
 
-inline void
-tokenize(std::string const& str, const char delim, std::vector<std::string>& out)
-{
-  std::size_t start;
-  std::size_t end = 0;
-  while ((start = str.find_first_not_of(delim, end)) != std::string::npos) {
-    end = str.find(delim, start);
-    out.push_back(str.substr(start, end - start));
-  }
-}
-
 void
 FelixReaderModule::init(const std::shared_ptr<appfwk::ConfigurationManager> mcfg)
 {
+<<<<<<< HEAD
   //auto ini = args.get<appfwk::app::ModInit>();
   
   auto modconf = mcfg->get_dal<appmodel::DataReaderModule>(get_name());
+=======
+ 
+  auto modconf = mcfg->module<appmodel::DataReaderModule>(get_name());
+  auto session = mcfg->configuration_manager()->session();
+>>>>>>> origin/patch/fddaq-v5.2.x
 
   if (modconf->get_connections().size() != 1) {
-    throw InitializationError(ERS_HERE, "FLX Data Reader does not have a unique associated interface");
+    throw InitializationError(ERS_HERE, "FLX Data Reader does not have a unique associated flx_if");
   }
 
   const confmodel::DetectorToDaqConnection*  det_conn = modconf->get_connections()[0]->cast<confmodel::DetectorToDaqConnection>();
 
 // Create a source_id to local elink map
   std::map<uint, uint> src_id_to_elink_map;
+  auto flx_if = det_conn->get_receiver()->cast<appmodel::FelixInterface>();
+  auto det_senders = det_conn->get_senders();
 
-  for (const auto & resources : det_conn->get_contains()) {
-    const appmodel::FelixInterface* interface = resources->cast<appmodel::FelixInterface>();
-    const confmodel::ResourceSetAND* det_senders = resources->cast<confmodel::ResourceSetAND>();
-    if (interface != nullptr) {
-      m_card_wrapper = std::make_unique<CardWrapper>(interface);
-      m_card_id = interface->get_card();
-      m_logical_unit = interface->get_slr();
-      m_links_enabled = interface->get_links_enabled();
-      m_num_links = m_links_enabled.size();
-      m_block_size = interface->get_dma_block_size() * m_1kb_block_size;
-      m_chunk_trailer_size = interface->get_chunk_trailer_size();
-    }
-    else if (det_senders != nullptr){
-      for (const auto & det_sender_res : det_senders->get_contains()) {
-         const appmodel::FelixDataSender* data_sender = det_sender_res->cast<appmodel::FelixDataSender>();
-	 if (data_sender != nullptr) {
-	 for (const auto & stream_res : data_sender->get_contains()) {
-           const confmodel::DetectorStream* stream = stream_res->cast<confmodel::DetectorStream>();
-           if (stream != nullptr) {
-              src_id_to_elink_map[stream->get_source_id()] = data_sender->get_link();
-	   } 
-	 }
-         }
+  if (!det_senders.empty()) {
+    for (const auto& det_sender_res : det_senders) {
+
+      const appmodel::FelixDataSender* data_sender = det_sender_res->cast<appmodel::FelixDataSender>();
+      
+      if (data_sender != nullptr) {
+        // Check if sender enabled
+        if (data_sender->disabled(*session))
+          continue;
+
+        if (data_sender->get_contains().size() > 1 ){ 
+          // TODO add throw
+        }
+
+        for (const auto& stream_res : data_sender->get_contains()) {
+          const confmodel::DetectorStream* stream = stream_res->cast<confmodel::DetectorStream>();
+          if (stream != nullptr) {
+            if (stream->disabled(*session)) {
+              TLOG_DEBUG(7) << "Ignoring disabled DetectorStream " << stream->UID();
+              continue;
+            }
+            src_id_to_elink_map[stream->get_source_id()] = data_sender->get_link();
+          } else {
+            // TODO add throw
+            // stream is nullpointer, this is not a DetectorStream!
+          }
+        }
+
+        TLOG(TLVL_BOOKKEEPING) << "Registering link: " << (uint32_t)data_sender->get_link() << " / " << m_links_enabled.size();
+        m_links_enabled.push_back(data_sender->get_link());
+
+      } else {
+        // TODO add throw
+        // det_senders is nullpointer, this is not a FelixDataSender!
+        // 
       }
-    } 
+    }
   }
+  m_num_links = m_links_enabled.size();
+  if (flx_if != nullptr) {
+        m_card_wrapper = std::make_unique<CardWrapper>(flx_if, m_links_enabled);
+        m_card_id = flx_if->get_card();
+        m_logical_unit = flx_if->get_slr();
+        m_block_size = flx_if->get_dma_block_size() * m_1kb_block_size;
+        m_chunk_trailer_size = flx_if->get_chunk_trailer_size();
+  }
+  
 
   for (auto qi : modconf->get_outputs()) {
     auto q_with_id = qi->cast<confmodel::QueueWithSourceId>();
@@ -171,7 +189,7 @@ FelixReaderModule::do_configure(const data_t& /*args*/)
    
     bool is_32b_trailer = false;
 
-    TLOG(TLVL_BOOKKEEPING) << "Number of elinks specified in configuration: " << m_links_enabled.size();
+    TLOG(TLVL_BOOKKEEPING) << "Number of felix links specified in configuration: " << m_links_enabled.size();
     TLOG(TLVL_BOOKKEEPING) << "Number of data link handlers: " << m_elinks.size();
 
     // Config checks

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(flxlibs VERSION 2.1.0)
+project(flxlibs VERSION 2.2.1)
 
 find_package(daq-cmake REQUIRED)
 
@@ -13,12 +13,12 @@ find_package(fdreadoutlibs REQUIRED)
 find_package(felix REQUIRED)
 find_package(opmonlib REQUIRED)
 find_package(utilities REQUIRED)
-find_package(folly)
-
+find_package(folly REQUIRED)
+find_package(fmt REQUIRED)
 
 ##############################################################################
 # Dependency sets
-set(DUNEDAQ_DEPENDENCIES appfwk::appfwk datahandlinglibs::datahandlinglibs fdreadoutlibs::fdreadoutlibs appmodel::appmodel confmodel::confmodel utilities::utilities)
+set(DUNEDAQ_DEPENDENCIES appfwk::appfwk datahandlinglibs::datahandlinglibs fdreadoutlibs::fdreadoutlibs appmodel::appmodel confmodel::confmodel utilities::utilities fmt::fmt)
 
 # Provide override functionality for FELIX dependencies
 option(WITH_FELIX_AS_PACKAGE "FELIX externals as a dunedaq package" ON)
@@ -53,9 +53,11 @@ endif()
 
 daq_protobuf_codegen( opmon/*.proto )
 
+daq_codegen(felixcardcontroller.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
 
-#daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp CardControllerWrapper.cpp LINK_LIBRARIES ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
-daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp LINK_LIBRARIES ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
+
+daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp CardControllerWrapper.cpp LINK_LIBRARIES ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
+# daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp LINK_LIBRARIES ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
 
 
 if(WITH_FELIX_AS_PACKAGE)
@@ -68,7 +70,7 @@ endif()
 ##############################################################################
 # Plugins
 daq_add_plugin(FelixReaderModule duneDAQModule LINK_LIBRARIES flxlibs)
-#daq_add_plugin(FelixCardController duneDAQModule LINK_LIBRARIES flxlibs)
+daq_add_plugin(FelixCardControllerModule duneDAQModule LINK_LIBRARIES flxlibs)
 
 ##############################################################################
 # Integration tests

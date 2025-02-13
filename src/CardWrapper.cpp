@@ -33,7 +33,7 @@ enum
 namespace dunedaq {
 namespace flxlibs {
 
-CardWrapper::CardWrapper(const appmodel::FelixInterface * cfg)
+CardWrapper::CardWrapper(const appmodel::FelixInterface * cfg, std::vector<unsigned int> enabled_links)
   : m_run_marker{ false }
   , m_card_id(cfg->get_card())
   , m_logical_unit(cfg->get_slr())
@@ -47,9 +47,9 @@ CardWrapper::CardWrapper(const appmodel::FelixInterface * cfg)
   , m_run_lock{ false }
   , m_dma_processor(0)
   , m_handle_block_addr(nullptr)
+  , m_links_enabled(enabled_links)
 {
   m_dma_memory_size = cfg->get_dma_memory_size_gb() * 1024 * 1024 * 1024UL;
-  m_links_enabled = cfg->get_links_enabled();
 
   std::ostringstream tnoss;
   tnoss << m_dma_processor_name << "-" << std::to_string(m_card_id); // append physical card id
@@ -111,9 +111,9 @@ CardWrapper::start()
     start_DMA();
     set_running(true);
     m_dma_processor.set_work(&CardWrapper::process_DMA, this);
-    TLOG_DEBUG(TLVL_WORK_STEPS) << "Started CardWrapper of card " << m_card_id_str << "...";
+    TLOG() << "Started CardWrapper of card " << m_card_id_str << "...";
   } else {
-    TLOG_DEBUG(TLVL_WORK_STEPS) << "CardWrapper of card " << m_card_id_str << " is already running!";
+    TLOG() << "CardWrapper of card " << m_card_id_str << " is already running!";
   }
 }
 
@@ -128,9 +128,9 @@ CardWrapper::graceful_stop()
     }
     stop_DMA();
     init_DMA();
-    TLOG_DEBUG(TLVL_WORK_STEPS) << "Stopped CardWrapper of card " << m_card_id_str << "!";
+    TLOG() << "Stopped CardWrapper of card " << m_card_id_str << "!";
   } else {
-    TLOG_DEBUG(TLVL_WORK_STEPS) << "CardWrapper of card " << m_card_id_str << " is already stopped!";
+    TLOG() << "CardWrapper of card " << m_card_id_str << " is already stopped!";
   }
 }
 
