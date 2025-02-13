@@ -13,11 +13,13 @@ find_package(fdreadoutlibs REQUIRED)
 find_package(felix REQUIRED)
 find_package(opmonlib REQUIRED)
 find_package(fmt REQUIRED)
+find_package(utilities REQUIRED)
+find_package(folly REQUIRED)
 
 
 ##############################################################################
 # Dependency sets
-set(DUNEDAQ_DEPENDENCIES appfwk::appfwk datahandlinglibs::datahandlinglibs fdreadoutlibs::fdreadoutlibs appmodel::appmodel confmodel::confmodel fmt::fmt)
+set(DUNEDAQ_DEPENDENCIES appfwk::appfwk datahandlinglibs::datahandlinglibs fdreadoutlibs::fdreadoutlibs appmodel::appmodel confmodel::confmodel utilities::utilities fmt::fmt)
 
 # Provide override functionality for FELIX dependencies
 option(WITH_FELIX_AS_PACKAGE "FELIX externals as a dunedaq package" ON)

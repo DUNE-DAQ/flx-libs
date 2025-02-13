@@ -10,6 +10,8 @@ find_dependency(datahandlinglibs)
 find_dependency(fdreadoutlibs)
 find_dependency(felix)
 find_dependency(opmonlib)
+find_dependency(utilities)
+find_dependency(folly)
 
 if (EXISTS ${CMAKE_SOURCE_DIR}/@PROJECT_NAME@)
 

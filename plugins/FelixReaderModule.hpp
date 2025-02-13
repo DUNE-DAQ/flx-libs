@@ -11,7 +11,7 @@
 
 // From appfwk
 #include "appfwk/DAQModule.hpp"
-#include "appfwk/ModuleConfiguration.hpp"
+#include "appfwk/ConfigurationManager.hpp"
 
 #include "utilities/WorkerThread.hpp"
 
@@ -43,7 +43,7 @@ public:
   FelixReaderModule(FelixReaderModule&&) = delete;                 ///< FelixReaderModule is not move-constructible
   FelixReaderModule& operator=(FelixReaderModule&&) = delete;      ///< FelixReaderModule is not move-assignable
 
-  void init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg) override;
+  void init(const std::shared_ptr<appfwk::ConfigurationManager> mcfg) override;
 
 private:
  
