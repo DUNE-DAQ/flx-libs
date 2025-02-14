@@ -34,20 +34,20 @@ local felixcardcontroller = {
                 doc="A list of registers and values"),
 
     link : s.record("Link", [
-    s.field("link_id", self.uint4, doc="Link identifier"),
-    s.field("enabled", self.boolean, doc="Indicate whether the link is enabled"),
-    s.field("dma_desc", self.uint8, doc="DMA channel"),
-    s.field("superchunk_factor", self.uint4, doc="Superchunk factor")
+        s.field("link_id", self.uint4, doc="Link identifier"),
+        s.field("enabled", self.boolean, doc="Indicate whether the link is enabled"),
+        s.field("dma_desc", self.uint8, doc="DMA channel"),
+        s.field("superchunk_factor", self.uint4, doc="Superchunk factor")
     ], doc=""),
 
     links : s.sequence("LinksList", self.link,
                 doc="A list of links"),
  
     logical_unit: s.record("LogicalUnit", [
-    s.field("log_unit_id", self.uint4, doc="Logical unit identifier"),
-    s.field("emu_fanout", self.boolean, doc="Toggle emulator on/off"),
-    s.field("links", self.links, doc="List of links in the logical unit"),
-    s.field("ignore_alignment_mask", self.array, [5], doc="Elinks to ignore when checking alignment."),
+        s.field("log_unit_id", self.uint4, doc="Logical unit identifier"),
+        s.field("emu_fanout", self.boolean, doc="Toggle emulator on/off"),
+        s.field("links", self.links, doc="List of links in the logical unit"),
+        s.field("ignore_alignment_mask", self.array, [5], doc="Elinks to ignore when checking alignment."),
     ], doc=""),
     
     logical_units : s.sequence("LogicalUnitList", self.logical_unit,
@@ -63,36 +63,36 @@ local felixcardcontroller = {
     ], doc="Upstream FELIX CardController DAQ Module Configuration"),
 
     getregister: s.record("GetRegisters", [
-    s.field("card_id", self.uint4, 0,
-            doc="Physical card identifier (in the same host)"),
-    s.field("log_unit_id", self.uint4, doc="Logical unit identifier"),
-    s.field("reg_names", self.reglist,
-                doc="A list of registers")
+        s.field("card_id", self.uint4, 0,
+                doc="Physical card identifier (in the same host)"),
+        s.field("log_unit_id", self.uint4, doc="Logical unit identifier"),
+        s.field("reg_names", self.reglist,
+                        doc="A list of registers")
     ], doc="Register access parameters"),
 
     setregister: s.record("SetRegisters", [
-    s.field("card_id", self.uint4, 0,
-            doc="Physical card identifier (in the same host)"),
-    s.field("log_unit_id", self.uint4, doc="Logical unit identifier"),
+        s.field("card_id", self.uint4, 0,
+                doc="Physical card identifier (in the same host)"),
+        s.field("log_unit_id", self.uint4, doc="Logical unit identifier"),
 
-    s.field("reg_val_pairs", self.regvallist,
-                doc="A list of registers and values to set")
+        s.field("reg_val_pairs", self.regvallist,
+                        doc="A list of registers and values to set")
     ], doc="Register access parameters"),
 
     getbitfield: s.record("GetBFs", [
-    s.field("card_id", self.uint4, 0,
-            doc="Physical card identifier (in the same host)"),
-    s.field("log_unit_id", self.uint4, doc="Logical unit identifier"),
-    s.field("bf_names", self.reglist,
-                doc="A list of bitfields")
+        s.field("card_id", self.uint4, 0,
+                doc="Physical card identifier (in the same host)"),
+        s.field("log_unit_id", self.uint4, doc="Logical unit identifier"),
+        s.field("bf_names", self.reglist,
+                        doc="A list of bitfields")
     ], doc="Bitfield access parameters"),
 
     setbitfield: s.record("SetBFs", [
-    s.field("card_id", self.uint4, 0,
-            doc="Physical card identifier (in the same host)"),
-    s.field("log_unit_id", self.uint4, doc="Logical unit identifier"),
-    s.field("bf_val_pairs", self.regvallist,
-                doc="A list of bitfields and values to set")
+        s.field("card_id", self.uint4, 0,
+                doc="Physical card identifier (in the same host)"),
+        s.field("log_unit_id", self.uint4, doc="Logical unit identifier"),
+        s.field("bf_val_pairs", self.regvallist,
+                        doc="A list of bitfields and values to set")
     ], doc="Bitfield access parameters"),
 
 };
